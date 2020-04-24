@@ -14,6 +14,7 @@
   "repository": "https://github.com/ghent360/grbrender.git",
   "license": "MIT",
   "dependencies": {
+    "canvas": "^2.6.1",
     "jszip": "^3.3.0",
     "svg.js": "^2.7.1"
   },

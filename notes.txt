@@ -1,0 +1,9 @@
+Image diff tools:
+     looks-same (https://github.com/gemini-testing/looks-same)
+    *pixelmatch (https://github.com/mapbox/pixelmatch)
+
+Drawing libs:
+    node-canvas (https://github.com/Automattic/node-canvas)
+    skia-n-api (https://github.com/Reon90/skiaJS)
+    canvaskit-wasm (https://github.com/google/skia/tree/master/modules/canvaskit)
+    also look at pathkit-wasm (https://github.com/google/skia/tree/master/modules/pathkit)
