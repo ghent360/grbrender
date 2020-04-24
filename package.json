@@ -1,0 +1,28 @@
+{
+  "name": "grbrender",
+  "version": "0.0.1",
+  "description": "Gerber file renderer",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --require ts-node/register 'test/**/*.spec.ts'",
+    "dist": "date -u +\"export const Build='%g%m%d.%H%M';\" >build.ts && tsc -p ./tsconfig.release.json --outDir dist/"
+  },
+  "keywords": [
+    "gerber"
+  ],
+  "author": "Venelin Efremov <veffremov@iqury.us>",
+  "repository": "https://github.com/ghent360/grbrender.git",
+  "license": "MIT",
+  "dependencies": {
+    "jszip": "^3.3.0",
+    "svg.js": "^2.7.1"
+  },
+  "devDependencies": {
+    "@types/jszip": "^3.1.6",
+    "@types/node": "^13.11.1",
+    "@types/mocha": "^7.0.2",
+    "mocha": "^7.1.1",
+    "ts-node": "^8.8.2",
+    "typescript": "^3.6.4"
+  }
+}

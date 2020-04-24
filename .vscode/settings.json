@@ -1,0 +1,5 @@
+{
+    "mocha.enabled": true,
+    "C_Cpp.intelliSenseEngine": "Default",
+    "svg.preview.background": "black"
+}
