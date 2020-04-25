@@ -14,6 +14,7 @@ import * as Color from 'color';
 import {
     Canvas
 } from "canvas";
+require('canvas-5-polyfill');
 
 export interface LayerInfo {
     readonly fileName:string;

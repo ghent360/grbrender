@@ -6,7 +6,6 @@ import {
     ComponentCenters,
     FileContent
 } from "./AsyncGerberParserAPI";
-import {Build} from "./build";
 import {
     BoardLayer,
     BoardSide
@@ -18,6 +17,8 @@ import {
     LayerInfo
 } from "./CanvasRenderer";
 import * as Color from 'color';
+import * as fs from 'fs';
+require('canvas-5-polyfill');
 
 const colorENIG = '#d8bf8a';
 const colorHASL = '#cad4c9';
@@ -125,69 +126,31 @@ function calcBounds(selection:Array<LayerInfo>):Bounds {
     return result;
 }
 
-class FileReaderList {
-    private incomplete:number;
-    private content:Map<string, string> = new Map();
-    private result:Array<FileContent> = [];
+export class GerberRenderer {
+    private layerList:Array<LayerFile>;
 
-    constructor(readonly files:Array<File>) {
-        this.incomplete = files.length;
-        console.log(`created file reader for ${this.incomplete} files`);
-    }
-
-    read(cb:(contnent:Array<FileContent>) => void) {
-        this.files.forEach(file => {
+    readZipFile(file:string):void {
+        /* old code        
             let reader = new FileReader();
             reader.onload = (e:ProgressEvent) => {
-                this.content.set(file.name, reader.result as string);
-                this.incomplete--;
-                if (this.incomplete == 0) {
-                    this.content.forEach((v:string, k:string) => {
-                        this.result.push({fileName:k, content:v});
-                    });
-                    if (cb) {
-                        cb(this.result);
-                    }
-                }
+                this.processZipFile(reader.result as ArrayBuffer);
             };
             reader.onerror = (e:any) => {
                 console.log("Error: " + e.error);
-                /*ReactGA.exception({
-                    description: 'Read input file error.',
-                    fatal: true
-                });*/
             }
-            reader.readAsText(file);
+            reader.readAsArrayBuffer(file);
+        */            
+        fs.promises.readFile(file as string).then(data => {
+            this.processZipFile(data.buffer);
         });
     }
 
-    isComplete() {
-        return this.incomplete > 0;
-    }
-
-    getResult():Array<FileContent> {
-        return this.result;
-    }
-}
-
-class GerberRenderer {
-    private layerList:Array<LayerFile>;
-
-    readZipFile(file:File):void {
-        let reader = new FileReader();
-        reader.onload = (e:ProgressEvent) => {
-            this.processZipFile(reader.result as ArrayBuffer);
-        };
-        reader.onerror = (e:any) => {
-            console.log("Error: " + e.error);
-        }
-        reader.readAsArrayBuffer(file);
-    }
-
+    /*
     readFiles(files:Array<File>) {
         let reader = new FileReaderList(files);
         reader.read((content:Array<FileContent>) => this.processFiles(content));
     }
+    */
 
     processFiles(content:Array<FileContent>) {
         this.layerList = [];
@@ -262,7 +225,7 @@ class GerberRenderer {
     }
 
     private processingComplete():void {
-        console.log('Completed rendering ${this.layerList.length} layers.');
-        this.layerList.forEach((layer) => console.log(layer));
+        console.log(`Completed rendering ${this.layerList.length} layers.`);
+        //this.layerList.forEach((layer) => console.log(layer));
     }
 }
