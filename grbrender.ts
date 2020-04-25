@@ -172,7 +172,6 @@ class FileReaderList {
 
 class GerberRenderer {
     private layerList:Array<LayerFile>;
-    private bounds:Bounds;
 
     readZipFile(file:File):void {
         let reader = new FileReader();
@@ -192,7 +191,6 @@ class GerberRenderer {
 
     processFiles(content:Array<FileContent>) {
         this.layerList = [];
-        this.bounds = undefined;
 
         new AsyncGerberParser(
             {files:content},
@@ -202,7 +200,6 @@ class GerberRenderer {
 
     processZipFile(stream:ArrayBuffer):void {
         this.layerList = [];
-        this.bounds = undefined;
 
         new AsyncGerberParser(
             {zipFileBuffer:stream},
@@ -265,6 +262,7 @@ class GerberRenderer {
     }
 
     private processingComplete():void {
-
+        console.log('Completed rendering ${this.layerList.length} layers.');
+        this.layerList.forEach((layer) => console.log(layer));
     }
 }
