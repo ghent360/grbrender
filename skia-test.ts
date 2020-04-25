@@ -57,6 +57,7 @@ function draw(canvas):void {
     sk.skPaintSetTypeface(text, typeface);
     const str = "skiaJS";
     sk.skCanvasDrawText(canvas, str, str.length, 1000.0, 50.0, text);
+    sk.skFontstyleDelete(style);
     sk.skPaintDelete(text);
 
     const size = new Int32Array([10, 10]);
@@ -105,16 +106,17 @@ function draw(canvas):void {
     sk.skCanvasSave(canvas);
     const luma = sk.skColorfilterNewLumaColor();
     const imgfilter = sk.skImagefilterNewColorFilter(luma, null, null);
-    //const imgpaint = sk.skPaintNew();
-    //sk.skPaintSetImagefilter(imgpaint, imgfilter);
+    const imgpaint = sk.skPaintNew();
+    sk.skPaintSetImagefilter(imgpaint, imgfilter);
 
-    //const url = "icon.png";
-    //const encoded = sk.skDataNewFromFile(url);
-    //const rect4 = new Int32Array([0, 0, 1024, 1024]);
-    //const image2 = sk.skImageNewFromEncoded(encoded, rect4.buffer);
-    //sk.skCanvasScale(canvas, 0.2, 0.2);
-    //sk.skCanvasDrawImage(canvas, image2, 1000.0, 2500.0, imgpaint);
-    //sk.skCanvasRestore(canvas);
+    const url = "clock.png";
+    const encoded = sk.skDataNewFromFile(url);
+    const rect4 = new Int32Array([0, 0, 1024, 1024]);
+    const image2 = sk.skImageNewFromEncoded(encoded, rect4.buffer);
+    sk.skCanvasScale(canvas, 0.2, 0.2);
+    sk.skCanvasDrawImage(canvas, image2, 1000.0, 2500.0, imgpaint);
+    sk.skCanvasRestore(canvas);
+    sk.skPaintDelete(imgpaint);
 
     const pointfill = sk.skPaintNew();
     const points = new Float32Array([900.0, 600.0, 1000.0, 700.0]);
@@ -126,6 +128,7 @@ function draw(canvas):void {
     const rect6 = new Float32Array([460.0, 500.0, 740.0, 700.0]);
     sk.skRrectSetRectXy(rounded, rect6.buffer, 50, 50);
     sk.skCanvasDrawRrect(canvas, rounded, rrect);
+    sk.skRrectDelete(rounded);
     sk.skPaintDelete(rrect);
 }
 
@@ -139,7 +142,8 @@ function main(): void {
     const image = sk.skSurfaceNewImageSnapshot(surface);
     const imgData = sk.skImageEncode(image);
     const buffer = sk.getMemory(sk.skDataGetData(imgData), BigInt(sk.skDataGetSize(imgData)));
-    fs.writeFileSync(path.join(__dirname, 'skia.png'), new Int8Array(buffer));
+    //fs.writeFileSync(path.join(__dirname, 'skia.png'), new Int8Array(buffer));
 }
 
+//for(let i=0;i < 100; i++)
 main();
