@@ -3,3 +3,4 @@ package-lock.json
 dist/
 *.js
 *.js.map
+build.ts

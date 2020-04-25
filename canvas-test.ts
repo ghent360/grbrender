@@ -103,12 +103,23 @@ function clock(ctx:cnv.CanvasRenderingContext2D, size:number):void {
 }
 
 function main():void {
-    let size = 4000;
+    let size = 2000;
     let cv = cnv.createCanvas(size, size);
     let ctx = cv.getContext('2d');
     clock(ctx, size);
-    cv.createPNGStream().pipe(fs.createWriteStream(path.join(__dirname, 'clock.png')));
+    // BGRA pixel values, native-endian
+    let buffer = cv.toBuffer("raw");
+    const {stride, width} = cv;
+    //console.log(`stride ${stride}, width ${width}`);
+    // In memory, this is `canvas.height * canvas.stride` bytes long.
+    // The top row of pixels, in BGRA order on little-endian hardware,
+    // left-to-right, is:
+    const topPixelsBGRALeftToRight = buffer.slice(0, width * 4);
+    // And the third row is:
+    const row3 = buffer.slice(2 * stride, 2 * stride + width * 4);
+    //cv.createPNGStream().pipe(fs.createWriteStream(path.join(__dirname, 'clock.png')));
     //setTimeout(main, 5000);
 }
 
+//for(let i=0;i < 100; i++)
 main();
