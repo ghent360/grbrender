@@ -16,6 +16,7 @@
   "dependencies": {
     "canvas": "^2.6.1",
     "jszip": "^3.3.0",
+    "skia-n-api": "0.0.4",
     "svg.js": "^2.7.1"
   },
   "devDependencies": {
