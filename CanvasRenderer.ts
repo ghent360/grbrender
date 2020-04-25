@@ -15,7 +15,6 @@ import {
     Canvas
 } from "canvas";
 
-
 export interface LayerInfo {
     readonly fileName:string;
     readonly boardLayer:BoardLayer,
@@ -35,114 +34,9 @@ export interface LayerInfo {
 // Oshpark mask #2b1444
 //
 // FR4 #ab9f15
-export const colorFR4 = '#ab9f15';
-export const colorENIG = '#d8bf8a';
-export const colorHASL = '#cad4c9';
-export const colorGreen = '#0e8044';
+const colorFR4 = '#ab9f15';
 
-const layerColors = {
-    0:"#e9b397",    // Copper
-    1:colorENIG,    // SolderMask
-    2:"white",      // Silk // #c2d3df
-    3:"silver",     // Paste
-    4:"white",      // Drill
-    5:"black",      // Mill
-    6:"black",      // Outline
-    7:"carbon",     // Carbon
-    8:"green",      // Notes
-    9:"yellow",     // Assembly
-    10:"brown",     // Mechanical
-    11:"black",     // Unknown
-};
-
-class LayerFile implements LayerInfo {
-    constructor(
-        public fileName:string,
-        public boardSide:BoardSide,
-        public boardLayer:BoardLayer,
-        public status:string,
-        public content:string,
-        public polygons:GerberPolygons,
-        public holes:ExcellonHoles,
-        public centers:ComponentCenters,
-        public selected:boolean,
-        public opacity:number,
-        public solid:Path2D,
-        public thin:Path2D,
-        public color:Color) {}
-}
-
-function drawPolygon(polygon:Float64Array, context:Path2D) {
-    context.moveTo(polygon[0], polygon[1]);
-    for (let idx = 2; idx < polygon.length; idx += 2) {
-        context.lineTo(polygon[idx], polygon[idx + 1]);
-    }
-}
-
-function createPathCache(polygons:GerberPolygons):{solid:Path2D, thin:Path2D} {
-    let solidPath = new Path2D();
-    let isEmpty = true;
-    polygons.solids
-        .filter(p => p.length > 1)
-        .forEach(p => {
-            drawPolygon(p, solidPath);
-            isEmpty = false;
-        });
-    if (!isEmpty) {
-        solidPath.closePath();
-    } else {
-        solidPath = undefined;
-    }
-    let thinPath = new Path2D();
-    isEmpty = true;
-    polygons.thins
-        .filter(p => p.length > 1)
-        .forEach(p => {
-            drawPolygon(p, thinPath);
-            isEmpty = false;
-        });
-    if (isEmpty) {
-        thinPath = undefined;
-    }
-    return {solid:solidPath, thin:thinPath};
-}
-
-function calcBounds(selection:Array<LayerInfo>):Bounds {
-    if (selection.length == 0) {
-        return undefined;
-    }
-    let result = {
-        minx:Number.MAX_SAFE_INTEGER,
-        miny:Number.MAX_SAFE_INTEGER,
-        maxx:Number.MIN_SAFE_INTEGER,
-        maxy:Number.MIN_SAFE_INTEGER,
-    };
-    selection.forEach(o => {
-        let bounds:Bounds;
-        if (o.polygons) {
-            bounds = o.polygons.bounds;
-        } else if (o.holes) {
-            bounds = o.holes.bounds;
-        } else if (o.centers) {
-            bounds = o.centers.bounds;
-        }
-        if (bounds.minx < result.minx) {
-            result.minx = bounds.minx;
-        }
-        if (bounds.miny < result.miny) {
-            result.miny = bounds.miny;
-        }
-        if (bounds.maxx > result.maxx) {
-            result.maxx = bounds.maxx;
-        }
-        if (bounds.maxy > result.maxy) {
-            result.maxy = bounds.maxy;
-        }
-    });
-    return result;
-}
-
-export interface CanvasViewerProps { 
+export interface CanvasRendererProps { 
     layers:Array<LayerInfo>;
     bounds:Bounds;
 }
@@ -167,7 +61,7 @@ function colorToHtml(clr:number):string {
     return ss;
 }
 
-export class CanvasViewer {
+export class CanvasRenderer {
     private width:number;
     private height:number;
     private selection:Array<LayerInfo>;
@@ -182,12 +76,12 @@ export class CanvasViewer {
     public useCheckeredBackground:boolean = false;
     public blockSize:number = 10;
 
-    setLayers(props:CanvasViewerProps):void {
+    setLayers(props:CanvasRendererProps):void {
         this.contentSize = this.computeContentSize(props);
         this.selection = props.layers ? props.layers.filter(l => l.selected) : undefined;
     }
 
-    private computeContentSize(props:CanvasViewerProps):ContentSize {
+    private computeContentSize(props:CanvasRendererProps):ContentSize {
         let bounds = props.bounds;
         return { 
             contentWidth:bounds.maxx - bounds.minx,

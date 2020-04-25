@@ -38,15 +38,16 @@ interface ProcessingData {
     renderTime?:number;
 }
 
-export class GerberRenderer {
+export class AsyncGerberParser {
 
     constructor(
         private inputData_:GerberParserInput,
-        private statusUpdate_:(status:GerberParserOutput) => void) {
+        private statusUpdate_:(status:GerberParserOutput) => void,
+        private complete_:() => void) {
         this.processInput();
     }
 
-    gerberToPolygons(fileName:string, content:string, unzipDuration:number) {
+    private gerberToPolygons(fileName:string, content:string, unzipDuration:number) {
         Init.then(() => {
             try {
                 let renderStart = performance.now();
@@ -73,7 +74,7 @@ export class GerberRenderer {
         });
     }
 
-    excellonFile(fileName:string, content:string, unzipDuration:number) {
+    private excellonFile(fileName:string, content:string, unzipDuration:number) {
         try {
             //console.log(`Parsing '${fileName}'`);
             let renderStart = performance.now();
@@ -100,7 +101,7 @@ export class GerberRenderer {
         }
     }
 
-    centroidFile(fileName:string, content:string, unzipDuration:number) {
+    private centroidFile(fileName:string, content:string, unzipDuration:number) {
         try {
             //console.log(`Parsing '${fileName}'`);
             let renderStart = performance.now();
@@ -128,7 +129,8 @@ export class GerberRenderer {
         }
     }
 
-    processZipFiles(zip:JSZip) {
+    private processZipFiles(zip:JSZip) {
+        let allUnzips:Array<Promise<void>> = [];
         for(let fileName in zip.files) {
             let zipObject = zip.files[fileName];
             if (zipObject.dir) {
@@ -150,7 +152,7 @@ export class GerberRenderer {
             this.postStatusUpdate(
                 fileName, "Processing", {side:fileInfo.side, layer:fileInfo.layer});
             let startUnzip = performance.now();
-            zipObject
+            let unzipComplete = zipObject
                 .async("text")
                 .then( (content) => {
                     let endUnzip = performance.now();
@@ -170,10 +172,16 @@ export class GerberRenderer {
                         this.gerberToPolygons(fileName, content, endUnzip - startUnzip);
                     }
                 });
+            allUnzips.push(unzipComplete);
         }
+        Promise.all(allUnzips).then(() => {
+            if (this.complete_) {
+                this.complete_();
+            }
+        });
     }
 
-    processInput():void {
+    private processInput():void {
         if (this.inputData_.zipFileBuffer) {
             new JSZip()
                 .loadAsync(this.inputData_.zipFileBuffer)
@@ -212,10 +220,13 @@ export class GerberRenderer {
                     this.gerberToPolygons(fileName, file.content, -1);
                 }
             });
+            if (this.complete_) {
+                this.complete_();
+            }
         }
     }
 
-    postStatusUpdate(fileName:string, status:string, data:ProcessingData) {
+    private postStatusUpdate(fileName:string, status:string, data:ProcessingData) {
         let output = new GerberParserOutput(
             fileName,
             status,
