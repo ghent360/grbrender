@@ -126,6 +126,34 @@ function calcBounds(selection:Array<LayerInfo>):Bounds {
     return result;
 }
 
+function getBoardLayer(layer:BoardLayer):string {
+    switch(layer) {
+        case BoardLayer.Copper: return "copper";
+        case BoardLayer.SolderMask: return "solder mask";
+        case BoardLayer.Silk: return "silk screen";
+        case BoardLayer.Paste: return "paste";
+        case BoardLayer.Drill: return "drill";
+        case BoardLayer.Mill: return "mill";
+        case BoardLayer.Outline: return "outline";
+        case BoardLayer.Carbon: return "carbon";
+        case BoardLayer.Notes: return "notes";
+        case BoardLayer.Assembly: return "assembly";
+        case BoardLayer.Mechanical: return "mechanical";
+        case BoardLayer.Place: return "pick-n-place";
+    }
+    return "unknown";
+}
+
+function getBoardSide(side:BoardSide):string {
+    switch(side) {
+        case BoardSide.Top: return "top";
+        case BoardSide.Both: return "both";
+        case BoardSide.Bottom: return "bottom";
+        case BoardSide.Internal: return "internal";
+    }
+    return "unknown";
+}
+
 export class GerberRenderer {
     private layerList:Array<LayerFile>;
 
@@ -152,7 +180,7 @@ export class GerberRenderer {
     }
     */
 
-    processFiles(content:Array<FileContent>) {
+   private processFiles(content:Array<FileContent>) {
         this.layerList = [];
 
         new AsyncGerberParser(
@@ -161,7 +189,7 @@ export class GerberRenderer {
             () => this.processingComplete());
     }
 
-    processZipFile(stream:ArrayBuffer):void {
+    private processZipFile(stream:ArrayBuffer):void {
         this.layerList = [];
 
         new AsyncGerberParser(
@@ -170,7 +198,7 @@ export class GerberRenderer {
             () => this.processingComplete());
     }
 
-    processGerberOutput(output:GerberParserOutput) {
+    private processGerberOutput(output:GerberParserOutput) {
         let newFileList = [];
         let handled = false
         for (let gerberFile of this.layerList) {
@@ -225,7 +253,9 @@ export class GerberRenderer {
     }
 
     private processingComplete():void {
-        console.log(`Completed rendering ${this.layerList.length} layers.`);
-        //this.layerList.forEach((layer) => console.log(layer));
+        console.log(`Completed parsing ${this.layerList.length} layers.`);
+        this.layerList.forEach((layer) => {
+            console.log(`${layer.fileName} is ${getBoardLayer(layer.boardLayer)} layer on ${getBoardSide(layer.boardSide)} side`);
+        });
     }
 }
